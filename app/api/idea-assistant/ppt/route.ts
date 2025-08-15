@@ -107,8 +107,7 @@ export async function POST(request: Request) {
           });
           if (res.ok) {
             const arrayBuf = await res.arrayBuffer();
-            const buffer = Buffer.from(arrayBuf);
-            return new Response(buffer, {
+            return new Response(arrayBuf, {
               status: 200,
               headers: {
                 "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -213,8 +212,8 @@ export async function POST(request: Request) {
         slide.addText(idea.notes.map((n) => sanitize(`• ${n}`)).join("\n"), { x: 0.6, y: 1.4, w: 8.6, h: 4.6, fontSize: 18 });
       }
 
-      const buffer = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
-      return new Response(buffer, {
+      const arrayBuf = (await pptx.write({ outputType: "arraybuffer" })) as ArrayBuffer;
+      return new Response(arrayBuf, {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -259,8 +258,8 @@ export async function POST(request: Request) {
       slide.addText(sanitize(s.title), { x: 0.5, y: 0.6, w: 9, h: 1, fontSize: 28, bold: true });
     }
 
-    const buffer = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
-    return new Response(buffer, {
+    const arrayBuf = (await pptx.write({ outputType: "arraybuffer" })) as ArrayBuffer;
+    return new Response(arrayBuf, {
       status: 200,
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",

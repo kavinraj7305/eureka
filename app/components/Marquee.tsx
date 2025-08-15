@@ -7,7 +7,7 @@ export default function Marquee({ items }: { items: string[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!trackRef.current) return;
+    if (!trackRef.current) return undefined;
     const width = trackRef.current.scrollWidth / 2;
     const tween = gsap.to(trackRef.current, {
       x: -width,
@@ -15,7 +15,9 @@ export default function Marquee({ items }: { items: string[] }) {
       duration: 16,
       ease: "none",
     });
-    return () => tween.kill();
+    return () => {
+      tween.kill();
+    };
   }, []);
 
   return (

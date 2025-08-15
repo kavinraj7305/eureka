@@ -26,7 +26,7 @@ export default function ChatWidget() {
     const input = inputRef.current?.value?.trim();
     if (!input) return;
     inputRef.current!.value = "";
-    const next = [...messages, { role: "user", content: input }];
+    const next: Message[] = [...messages, { role: "user", content: input }];
     setMessages(next);
     setPending(true);
     try {
