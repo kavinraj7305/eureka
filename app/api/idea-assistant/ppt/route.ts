@@ -213,7 +213,7 @@ export async function POST(request: Request) {
         slide.addText(idea.notes.map((n) => sanitize(`• ${n}`)).join("\n"), { x: 0.6, y: 1.4, w: 8.6, h: 4.6, fontSize: 18 });
       }
 
-      const buffer = (await pptx.write("nodebuffer")) as Buffer;
+      const buffer = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
       return new Response(buffer, {
         status: 200,
         headers: {
@@ -259,7 +259,7 @@ export async function POST(request: Request) {
       slide.addText(sanitize(s.title), { x: 0.5, y: 0.6, w: 9, h: 1, fontSize: 28, bold: true });
     }
 
-    const buffer = (await pptx.write("nodebuffer")) as Buffer;
+    const buffer = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
     return new Response(buffer, {
       status: 200,
       headers: {
