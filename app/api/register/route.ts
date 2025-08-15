@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     // For now, echo success.
     return NextResponse.json({ ok: true });
   } catch (e) {
+    console.error(e);
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 }

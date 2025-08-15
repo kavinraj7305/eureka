@@ -38,13 +38,14 @@ export default function ChatWidget() {
           input,
         }),
       });
-      const data = await res.json();
+      const data: { reply?: string; error?: string } = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed");
-      setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-    } catch (e: any) {
+      setMessages((prev) => [...prev, { role: "assistant", content: data.reply || "" }]);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Unexpected";
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Error: ${e?.message || "Unexpected"}` },
+        { role: "assistant", content: `Error: ${message}` },
       ]);
     } finally {
       setPending(false);
@@ -71,8 +72,8 @@ export default function ChatWidget() {
         body: JSON.stringify({ outlineMarkdown: latestOutline }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || "Failed to generate PPT");
+        const data = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error((data as { error?: string })?.error || "Failed to generate PPT");
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -81,10 +82,11 @@ export default function ChatWidget() {
       a.download = "Eureka_Pitch.pptx";
       a.click();
       URL.revokeObjectURL(url);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Unexpected";
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Error generating PPT: ${e?.message || "Unexpected"}` },
+        { role: "assistant", content: `Error generating PPT: ${message}` },
       ]);
     }
   };

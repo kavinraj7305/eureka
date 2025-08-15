@@ -32,8 +32,8 @@ export default function MagneticButton({ asLinkHref, children, className = "", .
     return (
       <a
         href={asLinkHref}
-        onMouseMove={onMouseMove as any}
-        onMouseLeave={onMouseLeave as any}
+        onMouseMove={onMouseMove as unknown as React.MouseEventHandler<HTMLAnchorElement>}
+        onMouseLeave={onMouseLeave as unknown as React.MouseEventHandler<HTMLAnchorElement>}
         className={base}
       >
         {children}
