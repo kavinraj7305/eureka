@@ -74,6 +74,11 @@ export default function Home() {
                 Start registration
               </MagneticButton>
             </Link>
+            <Link href="/assistant" className="contents">
+              <MagneticButton className="bg-emerald-600 text-white hover:bg-emerald-500">
+                Open Idea Assistant
+              </MagneticButton>
+            </Link>
             <a href="#about" className="contents">
               <MagneticButton className="border border-black/10 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5">
                 Learn more

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -33,7 +33,10 @@ export default function ChatWidget() {
       const res = await fetch("/api/idea-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input }),
+        body: JSON.stringify({
+          messages: next.map((m) => ({ role: m.role, content: m.content })),
+          input,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed");
@@ -45,6 +48,44 @@ export default function ChatWidget() {
       ]);
     } finally {
       setPending(false);
+    }
+  };
+
+  const latestOutline = useMemo(() => {
+    // Find the most recent assistant message that has a "### Slide outline" section
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.role === "assistant" && /###\s*Slide outline/i.test(m.content)) {
+        return m.content;
+      }
+    }
+    return null;
+  }, [messages]);
+
+  const downloadPpt = async () => {
+    if (!latestOutline) return;
+    try {
+      const res = await fetch("/api/idea-assistant/ppt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ outlineMarkdown: latestOutline }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Failed to generate PPT");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Eureka_Pitch.pptx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Error generating PPT: ${e?.message || "Unexpected"}` },
+      ]);
     }
   };
 
@@ -87,6 +128,9 @@ export default function ChatWidget() {
               <div className="flex gap-2">
                 <textarea ref={inputRef} rows={2} placeholder="Describe your interests or a problem…" className="flex-1 rounded-lg border border-black/10 dark:border-white/15 px-3 py-2" />
                 <button onClick={send} disabled={pending} className="rounded-lg bg-emerald-600 text-white px-4 py-2 disabled:opacity-60">Send</button>
+                {latestOutline && (
+                  <button onClick={downloadPpt} className="rounded-lg bg-indigo-600 text-white px-4 py-2">Download PPT</button>
+                )}
               </div>
               <div className="mt-2 text-[11px] opacity-60">
                 Tip: Try “I like sustainability and campus life, suggest ideas”. Register at the official site first, then RIT prelims.

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 
 export const runtime = "nodejs";
 
@@ -15,48 +16,62 @@ export async function POST(request: Request) {
       );
     }
 
-    const { input } = (await request.json()) as { input?: string };
-    if (!input || typeof input !== "string") {
+    const body = (await request.json()) as {
+      input?: string;
+      messages?: { role: "user" | "assistant"; content: string }[];
+    };
+    const { input, messages } = body || {};
+    if ((!input || typeof input !== "string") && !Array.isArray(messages)) {
       return NextResponse.json(
-        { error: "Invalid input" },
+        { error: "Invalid input: provide `input` string or `messages` array" },
         { status: 400 }
       );
     }
 
     const systemPrompt = `You are the Eureka Idea Assistant for the preliminary round hosted at RIT (NEC), co-hosted with IIT Bombay.
-Your job is to help students quickly craft strong, feasible startup ideas and a crisp pitch for Eureka.
+Your job is to take students through a short, structured flow that results in 5 rated ideas and a crisp slide outline for a PPT.
 
-STRICT OUTPUT FORMAT (Markdown only):
-### Tailored idea directions
-- Provide 3–5 bullets, each a short idea headline.
+Conversation policy (stateful, follow strictly):
+1) If interests/constraints are not yet collected, ASK QUESTIONS ONLY. Ask 4–6 short questions to learn: interests/domains, target user, skills/resources, location/context (campus/city), time to MVP, budget constraints.
+2) Once you have answers, propose exactly 5 idea candidates.
+3) Output a ratings table (1–5 stars plus numeric) with columns: Feasibility, Innovation, Public impact/Market, Time-to-MVP (lower time = higher stars), Revenue potential. Include an Overall score (avg of criteria) as a number 1–5.
+4) For each idea, output a brief deep dive: Problem, Proposed solution, Differentiator, Quick validation (2–3 checks), One-line pitch.
+5) Output a section titled exactly: "### Slide outline (7 slides)" with 7 numbered slides:
+   1. Title & Team
+   2. Problem & Who is affected
+   3. Solution & How it works
+   4. Market/users & Why now
+   5. Edge/differentiator
+   6. Execution/feasibility (MVP, timeline)
+   7. The ask (what support/funding)
 
-### Deep dive (for each idea)
-- Problem: ...
-- Proposed solution: ...
-- Differentiator: ...
-- Quick validation: 2–3 fast checks they can do this week
-- One-line pitch: “..."
-
-### Slide outline (5–7 slides)
-1. Title & Team
-2. Problem & Who is affected
-3. Solution & How it works
-4. Market/users & Why now
-5. Edge/differentiator
-6. Execution/feasibility (MVP, timeline)
-7. The ask (what support/funding)
-
-### Next actions
-- First register on the official Eureka website, then fill the RIT prelim form.
-- Official link: https://www.ecell.in/eureka/
-
-Tone: encouraging, practical, high-signal, concise.
+General rules:
+- Use Markdown only. Tables must be GitHub-flavored Markdown.
+- Use the star glyph \u2B50 to render stars, e.g., ★★★★☆.
+- If interests/constraints are unclear, do NOT propose ideas yet—ask clarifying questions first.
+- Keep tone encouraging, practical, and concise.
+- Always include a "### Next actions" section with the official link: https://www.ecell.in/eureka/.
 `;
 
-    const prompt = ChatPromptTemplate.fromMessages([
-      ["system", systemPrompt],
-      ["human", "{input}"],
-    ]);
+    let prompt: ChatPromptTemplate;
+    let promptVars: Record<string, unknown> = {};
+    if (Array.isArray(messages)) {
+      // Build a chat prompt with history in a placeholder to avoid template parsing of braces
+      const history = messages.map((m) =>
+        m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content)
+      );
+      prompt = ChatPromptTemplate.fromMessages([
+        ["system", systemPrompt],
+        new MessagesPlaceholder("history"),
+      ]);
+      promptVars = { history };
+    } else {
+      prompt = ChatPromptTemplate.fromMessages([
+        ["system", systemPrompt],
+        ["human", "{input}"],
+      ]);
+      promptVars = { input: input ?? "" };
+    }
 
     const requestedModel = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
@@ -67,7 +82,7 @@ Tone: encouraging, practical, high-signal, concise.
         apiKey,
       });
       const chain = prompt.pipe(model).pipe(new StringOutputParser());
-      const reply = await chain.invoke({ input });
+      const reply = await chain.invoke(promptVars);
       return reply;
     };
 
