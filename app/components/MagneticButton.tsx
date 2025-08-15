@@ -10,6 +10,8 @@ export default function MagneticButton({ asLinkHref, children, className = "", .
   const ref = useRef<HTMLButtonElement>(null);
 
   const onMouseMove = (e: React.MouseEvent) => {
+    // Skip magnetic hover on touch devices
+    if ("ontouchstart" in window) return;
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();

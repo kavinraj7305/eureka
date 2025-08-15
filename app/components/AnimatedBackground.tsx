@@ -28,7 +28,7 @@ export default function AnimatedBackground() {
   }, []);
 
   return (
-    <div ref={ref} className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div ref={ref} className="pointer-events-none fixed inset-0 -z-10 overflow-hidden hidden sm:block">
       <div className="bg-blob absolute -top-20 -left-10 size-[40vmax] rounded-full bg-indigo-500/20" />
       <div className="bg-blob absolute top-1/3 -right-10 size-[35vmax] rounded-full bg-fuchsia-500/20" />
       <div className="bg-blob absolute -bottom-20 left-1/4 size-[30vmax] rounded-full bg-sky-500/20" />

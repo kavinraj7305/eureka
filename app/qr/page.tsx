@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
+// Link not needed since we go direct to Google Form
 import { useState } from "react";
 import MagneticButton from "../components/MagneticButton";
 
 export default function QRFlowPage() {
   const [ack, setAck] = useState(false);
+  const RIT_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSde3jnqOnvdGj3VfRzyYzl7cR5Dyp5MOJiiYDsL-rHkH9GViw/viewform";
   return (
     <div className="min-h-dvh px-6 py-16">
       <div className="mx-auto max-w-3xl">
@@ -48,11 +49,9 @@ export default function QRFlowPage() {
               After finishing Step 1, proceed to our local registration for the prelims hosted at RIT (NEC).
             </p>
             {ack ? (
-              <Link href="/register" className="contents">
-                <MagneticButton className="mt-4 bg-emerald-600 text-white hover:bg-emerald-500">
-                  Continue to RIT registration
-                </MagneticButton>
-              </Link>
+              <MagneticButton asLinkHref={RIT_FORM_URL} className="mt-4 bg-emerald-600 text-white hover:bg-emerald-500">
+                Continue to RIT registration
+              </MagneticButton>
             ) : (
               <button disabled className="mt-4 px-5 py-3 rounded-lg bg-gray-300 text-gray-600 cursor-not-allowed">
                 Continue to RIT registration

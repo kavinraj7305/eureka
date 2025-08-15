@@ -106,10 +106,10 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 right-6 z-50 w-[92vw] max-w-md rounded-xl border border-black/10 dark:border-white/15 bg-white/90 dark:bg-zinc-900/90 backdrop-blur shadow-xl"
+            className="fixed inset-x-2 bottom-2 sm:bottom-20 sm:right-6 sm:left-auto z-50 w-[calc(100vw-1rem)] sm:w-[92vw] sm:max-w-md rounded-xl border border-black/10 dark:border-white/15 bg-white/95 dark:bg-zinc-900/95 backdrop-blur shadow-xl max-h-[80vh] sm:max-h-[50vh]"
           >
             <div className="p-4 border-b border-black/10 dark:border-white/15 font-semibold">Eureka Idea Assistant</div>
-            <div className="max-h-[50vh] overflow-y-auto p-4 space-y-3 text-sm">
+            <div className="max-h-[65vh] sm:max-h-[50vh] overflow-y-auto p-4 space-y-3 text-sm">
               {messages.map((m, i) => (
                 <div key={i} className={m.role === "user" ? "text-right" : "text-left"}>
                   <div className={`inline-block rounded-lg px-3 py-2 ${m.role === "user" ? "bg-indigo-600 text-white" : "bg-black/5 dark:bg-white/10"}`}>
